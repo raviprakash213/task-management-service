@@ -18,6 +18,7 @@ The **Task Management Service** is a Spring Boot-based application that provides
 - **MapStruct** for efficient DTO mapping.
 - **Resilience4j** for retry and fallback mechanisms in asynchronous task processing.
 - **Swagger** for API documentation.
+- **Sorting & Pagination** support for listing tasks efficiently.
 
 ## Technologies Used
 - Java
