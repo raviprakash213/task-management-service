@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: AsyncDataPipeline
+  datasource:
+    url: jdbc:postgresql://localhost:5432/Test2
+    username: postgres
+    password: root123
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=5m
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: task-group-id
+    topic:
+      name: taskManagementTest2
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    endpoint:
+      prometheus:
+        enabled: true
+# Swagger (Springdoc OpenAPI) Configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+resilience4j:
+  retry:
+    instances:
+      taskServiceRetry:
+        maxAttempts: 3  # Retry up to 3 times before failing
+        wait-duration: 2s
+
+
+
