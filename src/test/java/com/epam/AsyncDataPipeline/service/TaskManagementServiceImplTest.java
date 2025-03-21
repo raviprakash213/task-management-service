@@ -18,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.*;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -51,6 +52,10 @@ class TaskManagementServiceImplTest {
     private static TaskManagementStatusResponse taskManagementStatusResponse;
     private static TaskManagementRequest taskRequest;
 
+    private static Pageable pageable;
+    private static Page<TaskManagement> taskPage;
+
+
     @BeforeAll
     static void setUp() {
         taskManagementService = new TaskManagementServiceImpl();
@@ -67,6 +72,9 @@ class TaskManagementServiceImplTest {
 
         taskManagementStatusResponse = new TaskManagementStatusResponse();
         taskManagementStatusResponse.setStatus(TaskStatus.PENDING);
+
+        pageable = PageRequest.of(0, 5, Sort.by("id").ascending());
+        taskPage = new PageImpl<>(List.of(taskEntity), pageable, 1);
     }
 
     @Test
@@ -103,15 +111,21 @@ class TaskManagementServiceImplTest {
 
     @Test
     void testGetAllTasks() {
-        List<TaskManagement> taskList = Collections.singletonList(taskEntity);
-        when(taskManagementRepository.findAll()).thenReturn(taskList);
-        when(entityToModelMapper.mapEntityToDtoList(taskList)).thenReturn(List.of(taskResponse));
+        when(taskManagementRepository.findAll(pageable)).thenReturn(taskPage);
+        when(entityToModelMapper.mapEntityToDto(taskEntity)).thenReturn(taskResponse);
 
-        List<TaskManagementResponse> responses = taskManagementService.getAllTasks();
+        // Call service method
+        Page<TaskManagementResponse> responsePage = taskManagementService.getAllTasks(pageable);
 
-        assertNotNull(responses);
-        assertEquals(1, responses.size());
-        verify(taskManagementRepository, times(1)).findAll();
+        // Assertions
+        assertNotNull(responsePage);
+        assertEquals(1, responsePage.getTotalElements());
+        assertEquals(1, responsePage.getContent().size());
+        assertEquals(taskResponse, responsePage.getContent().get(0));
+
+        // Verify method calls
+        verify(taskManagementRepository, times(1)).findAll(pageable);
+        verify(entityToModelMapper, times(1)).mapEntityToDto(taskEntity);
     }
 
     @Test

@@ -20,6 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -101,22 +103,6 @@ public class TaskManagementServiceImpl implements TaskManagementService {
 
     }
 
-    /**
-     * Retrieves all tasks from the database.
-     *
-     * @return A list of task management responses.
-     */
-    @Override
-    public List<TaskManagementResponse> getAllTasks() {
-        logger.info("Fetching all tasks from the database.");
-        List<TaskManagement> taskManagementResponseList = taskManagementRepository.findAll();
-
-        logger.info("Retrieved {} tasks from the database.", taskManagementResponseList.size());
-        return entityToModelMapper.mapEntityToDtoList(taskManagementResponseList);
-
-
-    }
-
 
     /**
      * Retrieves the status of a specific task by its ID, with caching enabled.
@@ -132,6 +118,18 @@ public class TaskManagementServiceImpl implements TaskManagementService {
 
         logger.info("Task with ID {} found. Returning details.", id);
         return entityToModelMapper.mapEntityToStatusDto(taskManagementEntity);
+    }
+
+    @Override
+    public Page<TaskManagementResponse> getAllTasks(Pageable pageable) {
+        logger.info("Fetching all tasks with pagination: page={}, size={}, sort={}",
+                pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
+
+        Page<TaskManagement> taskPage = taskManagementRepository.findAll(pageable);
+
+        logger.info("Retrieved {} tasks from the database.", taskPage.getTotalElements());
+
+        return taskPage.map(entityToModelMapper::mapEntityToDto);
     }
 
     /**

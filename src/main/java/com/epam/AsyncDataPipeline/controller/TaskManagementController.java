@@ -10,11 +10,16 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 /**
  * Controller for managing task-related operations.
@@ -51,17 +56,27 @@ public class TaskManagementController {
 
 
     @GetMapping
-    @Operation(summary = "Get all tasks", description = "Fetches a list of all tasks available in the system")
+    @Operation(summary = "Get all tasks with pagination and sorting",
+            description = "Fetches a paginated and sorted list of tasks")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "List of tasks retrieved successfully")
     })
-    public ResponseEntity<List<TaskManagementResponse>> getAllTasks() {
+    public ResponseEntity<List<TaskManagementResponse>> getAllTasks(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
 
-        logger.info("Received request to fetch all tasks");
-        List<TaskManagementResponse> listOfTaskManagementResponse = taskManagementService.getAllTasks();
-        logger.info("Returning {} tasks.", listOfTaskManagementResponse.size());
+        logger.info("Received request to fetch tasks with page={}, size={}, sortBy={}, sortDir={}",
+                page, size, sortBy, sortDir);
 
-        return ResponseEntity.ok(listOfTaskManagementResponse);
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<TaskManagementResponse> pagedTasks = taskManagementService.getAllTasks(pageable);
+
+        List<TaskManagementResponse> taskList = pagedTasks.getContent();
+        return ResponseEntity.ok(taskList);
     }
 
 
