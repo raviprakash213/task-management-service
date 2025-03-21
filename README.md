@@ -21,17 +21,17 @@ The **Task Management Service** is a Spring Boot-based application that provides
 - **Sorting & Pagination** support for listing tasks efficiently.
 
 ## Technologies Used
-- Java
+- Java 17
 - Spring Boot 3.x
 - Spring Data JPA & Hibernate
 - PostgreSQL & H2 Database
 - Kafka
 - Spring Kafka (`@RetryableTopic` for retries)
-- Caffeine Cache (As application runing on local) for dsitributed Redis
+- Caffeine Cache (As application runing on local) for distributed environment can be replaced with Redis
 - Logback
 - Spring Boot Actuator
 - Prometheus & Grafana
-- JUnit & MockMvc
+- JUnit/Mockito & MockMvc
 - MapStruct
 - Resilience4j (Retry & Fallback)
 - Swagger (OpenAPI 3)
