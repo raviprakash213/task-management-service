@@ -58,9 +58,4 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(new Exception(errorMessage), ErrorType.DATA_ERROR, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
-        logger.error("Unexpected error occurred: {}", ex.getMessage(), ex);
-        return buildErrorResponse(ex, ErrorType.SYSTEM_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
 }

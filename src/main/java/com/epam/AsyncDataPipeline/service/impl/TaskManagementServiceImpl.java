@@ -164,8 +164,6 @@ public class TaskManagementServiceImpl implements TaskManagementService {
 
         long totalTasks = tasks.size();
 
-        taskMetricsService.incrementTasksSubmitted(totalTasks);
-
         logger.info("Total tasks retrieved: {}", totalTasks);
         Map<TaskStatus, Long> taskCountMap = tasks.stream()
                 .collect(Collectors.groupingBy(TaskManagement::getStatus, Collectors.counting()));
@@ -179,8 +177,6 @@ public class TaskManagementServiceImpl implements TaskManagementService {
         double successRate = totalTasks == 0 ? 0 : (completedTasks * TaskManagementConstants.PERCENTAGE_MULTIPLIER) / totalTasks;
         double failureRate = totalTasks == 0 ? 0 : (failedTasks * TaskManagementConstants.PERCENTAGE_MULTIPLIER) / totalTasks;
 
-        taskMetricsService.incrementTasksCompleted(completedTasks); // Increment completed tasks counter
-        taskMetricsService.incrementTasksFailed(failedTasks); // Increment failed tasks counter
 
         logger.info("Success rate: is {}", successRate);
         logger.info("Failure rate: is {}", failureRate);

@@ -47,15 +47,5 @@ public class TaskMetricsService {
         tasksFailedCounter.increment();
     }
 
-    public void incrementTasksSubmitted(double var) {
-        tasksSubmittedCounter.increment(var);
-    }
 
-    public void incrementTasksCompleted(double var) {
-        tasksCompletedCounter.increment(var);
-    }
-
-    public void incrementTasksFailed(double var) {
-        tasksFailedCounter.increment(var);
-    }
 }

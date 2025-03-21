@@ -36,7 +36,8 @@ public class TaskManagementComponentTest {
         taskRepository.save(new TaskManagement("Task 2", "Payload 2", TaskStatus.COMPLETED));
         taskRepository.save(new TaskManagement("Task 3", "Payload 3", TaskStatus.FAILED));
         savedTask = taskRepository.save(new TaskManagement("Task 4", "Payload 4", TaskStatus.PENDING));
-
+        taskRepository.save(new TaskManagement("Task 5", "Payload for Task 5", TaskStatus.COMPLETED));
+        taskRepository.save(new TaskManagement("Task 6", "Payload for Task 6", TaskStatus.FAILED));
 
     }
 
@@ -62,11 +63,11 @@ public class TaskManagementComponentTest {
     public void testSubmitTask_InvalidInput_EmptyName() throws Exception {
         // JSON payload with an empty name
         String invalidTaskRequestJson = """
-                {
-                    "name": "thisisaverylongwordthisisaverylongwordthisisaverylongwordthisisaverylongwordthisisaverylongwordthisisaverylongwordthisisaverylongwordthisisaverylongwordthisisaverylongwordthisisaverylongword",
-                    "payload": "Sample Payload"
-                }
-                """;
+                        {
+                            "name": "thisisaverylongwordthisisaverylongwordthisisaverylongwordthisisaverylongwordthisisaverylongwordthisisaverylongwordthisisaverylongwordthisisaverylongwordthisisaverylongwordthisisaverylongword",
+                            "payload": "Sample Payload"
+                        }
+                            """;
 
         mockMvc.perform(post("/taskManagement")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -82,7 +83,7 @@ public class TaskManagementComponentTest {
         mockMvc.perform(get("/taskManagement")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()) // Expect HTTP 200 OK
-                .andExpect(jsonPath("$.length()").value(4))
+                .andExpect(jsonPath("$.length()").value(6))
                 .andExpect(jsonPath("$[0].name").isNotEmpty())
                 .andExpect(jsonPath("$[1].name").isNotEmpty())
                 .andExpect(jsonPath("$[2].name").isNotEmpty())
@@ -113,11 +114,42 @@ public class TaskManagementComponentTest {
         mockMvc.perform(get("/taskManagement/statistics")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()) // Ensure HTTP 200 response
-                .andExpect(jsonPath("$.totalTasks").value(5))
-                .andExpect(jsonPath("$.completedTasks").value(2))
-                .andExpect(jsonPath("$.failedTasks").value(1))
-                .andExpect(jsonPath("$.successRate").value(40.0))
-                .andExpect(jsonPath("$.failureRate").value(20.0));
+                .andExpect(jsonPath("$.totalTasks").value(7))
+                .andExpect(jsonPath("$.completedTasks").value(3))
+                .andExpect(jsonPath("$.failedTasks").value(2))
+                .andExpect(jsonPath("$.successRate").value(42.857142857142854))
+                .andExpect(jsonPath("$.failureRate").value(28.571428571428573));
     }
+
+    @Test
+    public void testGetAllTasks_WithPaginationAndSorting() throws Exception {
+
+        mockMvc.perform(get("/taskManagement")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("page", "0") // Page number
+                        .param("size", "2") // Page size
+                        .param("sortBy", "name") // Sort by name
+                        .param("sortDir", "asc")) // Sort direction
+                .andExpect(status().isOk()) // Expect HTTP 200 OK
+                .andExpect(jsonPath("$.length()").value(2)) // Check that only 2 tasks are returned
+                .andExpect(jsonPath("$[0].name").value("New Task")) // First task should be "Task 1"
+                .andExpect(jsonPath("$[1].name").value("Task 1")); // Second task should be "Task 2"
+    }
+
+    @Test
+    public void testGetAllTasks_WithPaginationAndSorting_DescendingOrder() throws Exception {
+
+        mockMvc.perform(get("/taskManagement")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("page", "0") // Page number
+                        .param("size", "2") // Page size
+                        .param("sortBy", "name") // Sort by name
+                        .param("sortDir", "desc")) // Sort direction descending
+                .andExpect(status().isOk()) // Expect HTTP 200 OK
+                .andExpect(jsonPath("$.length()").value(2)) // Check that only 2 tasks are returned
+                .andExpect(jsonPath("$[0].name").value("Task 6")) // First task should be "Task 6"
+                .andExpect(jsonPath("$[1].name").value("Task 5")); // Second task should be "Task 5"
+    }
+
 
 }

@@ -214,9 +214,7 @@ class TaskManagementServiceImplTest {
         assertEquals(20.0, response.getFailureRate());     // (1/5) * 100 = 20%
 
         verify(taskManagementRepository, times(1)).findAll();
-        verify(taskMetricsService, times(1)).incrementTasksSubmitted(5);
-        verify(taskMetricsService, times(1)).incrementTasksCompleted(3);
-        verify(taskMetricsService, times(1)).incrementTasksFailed(1);
+
     }
 
 
