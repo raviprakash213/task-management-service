@@ -29,7 +29,7 @@ public class CaffeineCacheConfig {
     @Bean
     public Caffeine<Object, Object> caffeineConfig() {
         return Caffeine.newBuilder()
-                .expireAfterWrite(5, TimeUnit.MINUTES) // Expire entries after 5 min
+                .expireAfterWrite(TaskManagementConstants.CACHE_DURATION, TimeUnit.MINUTES) // Expire entries after 5 min
                 .recordStats();
     }
 }

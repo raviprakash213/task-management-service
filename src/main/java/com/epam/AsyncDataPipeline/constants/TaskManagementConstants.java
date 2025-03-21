@@ -7,7 +7,8 @@ public class TaskManagementConstants {
 
     public static final int THREAD_DELAY_MS = 10000;
 
-    public static final double TASK_INC_COUNTER=1;
+    public static final long CACHE_DURATION=5;
 
     public static final String APP_NAME="taskManagement";
+
 }
