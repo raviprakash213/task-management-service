@@ -2,7 +2,9 @@ package com.epam.AsyncDataPipeline.controller;
 
 
 import com.epam.AsyncDataPipeline.dto.*;
+import com.epam.AsyncDataPipeline.exception.InvalidSortDirectionException;
 import com.epam.AsyncDataPipeline.service.TaskManagementService;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -25,7 +27,7 @@ import org.springframework.data.domain.Sort;
  * Provides endpoints for submitting, retrieving, and monitoring tasks.
  */
 @RestController
-@RequestMapping("/taskManagement")
+@RequestMapping("/api/v1/taskManagement")
 public class TaskManagementController {
 
     private static final Logger logger = LoggerFactory.getLogger(TaskManagementController.class);
@@ -40,6 +42,7 @@ public class TaskManagementController {
             @ApiResponse(responseCode = "400", description = "Invalid request data"),
             @ApiResponse(responseCode = "500", description = "Internal server error while task processing")
     })
+    @RateLimiter(name = "submitTaskRateLimiter")
     public ResponseEntity<TaskCreationResponse> submitTask(@RequestBody @Valid TaskManagementRequest taskManagement) {
         logger.info("Received request to create a task with name: {}", taskManagement.getName());
 
@@ -55,7 +58,8 @@ public class TaskManagementController {
     @Operation(summary = "Get all tasks with pagination and sorting",
             description = "Fetches a paginated and sorted list of tasks")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "List of tasks retrieved successfully")
+            @ApiResponse(responseCode = "200", description = "List of tasks retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data")
     })
     public ResponseEntity<List<TaskManagementResponse>> getAllTasks(
             @RequestParam(defaultValue = "0") int page,
@@ -65,6 +69,12 @@ public class TaskManagementController {
 
         logger.info("Received request to fetch tasks with page={}, size={}, sortBy={}, sortDir={}",
                 page, size, sortBy, sortDir);
+
+        try {
+            Sort.Direction.fromString(sortDir);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidSortDirectionException(sortDir);
+        }
 
         Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
