@@ -43,7 +43,6 @@ public class TaskManagementController {
     public ResponseEntity<TaskCreationResponse> submitTask(@RequestBody @Valid TaskManagementRequest taskManagement) {
         logger.info("Received request to create a task with name: {}", taskManagement.getName());
 
-        // Call the service and get the response synchronously
         TaskCreationResponse response = taskManagementService.submitTask(taskManagement).join();
 
         logger.info("Task submitted for processing: {}", taskManagement.getName());
