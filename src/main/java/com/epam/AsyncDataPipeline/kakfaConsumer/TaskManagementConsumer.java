@@ -40,11 +40,17 @@ public class TaskManagementConsumer {
     private TaskMetricsService taskMetricsService;
 
     /**
-     * Kafka listener that processes task messages from the configured topic.
-     * Implements a retry mechanism for handling transient failures.
+     * Processes a task asynchronously upon receiving a message from the Kafka topic.
+     * <p>
+     * This method listens to a Kafka topic and retries processing up to 3 times with an exponential backoff strategy
+     * if a {@link TaskProcessingException} occurs. The retry attempts have a delay of 1 second initially,
+     * which doubles after each failure.
+     *</p>
+     * The task processing involves updating the task status, handling the task execution with a delay,
+     * and updating the status upon completion. In case of an error, it is handled appropriately.
      *
-     * @param taskId the task ID received from Kafka as a string
-     * @return a CompletableFuture representing the asynchronous task processing
+     * @param taskId the ID of the task to be processed
+     * @return a {@link CompletableFuture} that represents the asynchronous execution of the task
      */
     @RetryableTopic(
             attempts = "3",
@@ -72,7 +78,7 @@ public class TaskManagementConsumer {
 
     /**
      * Handles the actual processing of the task.
-     * Simulates a delay before marking the task as processed.
+     * Simulates a delay before marking the task as completed.
      *
      * @param taskId the task ID to process
      */

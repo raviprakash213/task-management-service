@@ -1,15 +1,15 @@
 package com.epam.AsyncDataPipeline.dto;
 
-/**
- * Data Transfer Object (DTO) for representing the response of a task creation request.
- * This class contains details about the created task, including its name and a
- * confirmation message.
- */
 public class TaskCreationResponse {
 
     private String name;
 
     private String creationMessage;
+
+    public TaskCreationResponse(String name, String creationMessage) {
+        this.name=name;
+        this.creationMessage=creationMessage;
+    }
 
     public String getName() {
         return name;

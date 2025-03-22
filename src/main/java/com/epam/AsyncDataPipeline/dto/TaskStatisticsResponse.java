@@ -1,9 +1,5 @@
 package com.epam.AsyncDataPipeline.dto;
 
-/**
- * DTO representing task statistics, including total tasks, completed tasks,
- * failed tasks, and their respective success and failure rates.
- */
 public class TaskStatisticsResponse {
 
     private long totalTasks;

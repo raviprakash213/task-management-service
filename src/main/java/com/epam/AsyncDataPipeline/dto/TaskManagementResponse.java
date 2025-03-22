@@ -1,9 +1,7 @@
 package com.epam.AsyncDataPipeline.dto;
 
 import com.epam.AsyncDataPipeline.enums.TaskStatus;
-/**
- * DTO representing the response details of a task in the system.
- */
+
 public class TaskManagementResponse {
 
     private Long id;

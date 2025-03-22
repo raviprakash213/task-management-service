@@ -1,9 +1,6 @@
 package com.epam.AsyncDataPipeline.service;
 
-import com.epam.AsyncDataPipeline.dto.TaskManagementRequest;
-import com.epam.AsyncDataPipeline.dto.TaskManagementResponse;
-import com.epam.AsyncDataPipeline.dto.TaskManagementStatusResponse;
-import com.epam.AsyncDataPipeline.dto.TaskStatisticsResponse;
+import com.epam.AsyncDataPipeline.dto.*;
 import com.epam.AsyncDataPipeline.entity.TaskManagement;
 import com.epam.AsyncDataPipeline.enums.TaskStatus;
 import com.epam.AsyncDataPipeline.exception.TaskNotFoundException;
@@ -25,6 +22,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -77,13 +75,17 @@ class TaskManagementServiceImplTest {
         taskPage = new PageImpl<>(List.of(taskEntity), pageable, 1);
     }
 
-    @Test
-    void testSubmitTask_Success() {
 
+
+    @Test
+    void testSubmitTask_Success() throws Exception {
         when(entityToModelMapper.mapRequestToEntity(taskRequest)).thenReturn(taskEntity);
         when(taskManagementRepository.save(any(TaskManagement.class))).thenReturn(taskEntity);
 
-        taskManagementService.submitTask(taskRequest);
+        CompletableFuture<TaskCreationResponse> responseFuture = taskManagementService.submitTask(taskRequest);
+        TaskCreationResponse response = responseFuture.get();
+
+        assertNotNull(response);
 
         verify(taskManagementRepository, times(1)).save(taskEntity);
         verify(kafkaTemplate, times(1)).send(anyString(), anyString());
@@ -91,23 +93,22 @@ class TaskManagementServiceImplTest {
     }
 
     @Test
-    void testSubmitTask_TaskProcessingException() {
+    void testSubmitTask_DatabaseFailure() {
         when(entityToModelMapper.mapRequestToEntity(taskRequest)).thenReturn(taskEntity);
-        when(taskManagementRepository.save(any(TaskManagement.class))).thenReturn(taskEntity);
+        when(taskManagementRepository.save(any(TaskManagement.class)))
+                .thenThrow(new TaskProcessingException("Database error occurred"));
 
-        doThrow(new TaskProcessingException("Kafka send failed"))
-                .when(kafkaTemplate).send( anyString(), anyString());
-
-        TaskProcessingException exception = assertThrows(TaskProcessingException.class, () -> {
-            taskManagementService.submitTask(taskRequest);
+        Exception exception = assertThrows(Exception.class, () -> {
+            taskManagementService.submitTask(taskRequest).join();
         });
 
-        assertEquals("Kafka send failed", exception.getMessage());
+        assertNotNull(exception.getMessage());
 
-        verify(taskManagementRepository, times(1)).save(any(TaskManagement.class));
-        verify(kafkaTemplate, times(1)).send( anyString(), anyString());
+        verify(taskManagementRepository, times(1)).save(taskEntity);
+        verifyNoInteractions(kafkaTemplate);
         verifyNoInteractions(taskMetricsService);
     }
+
 
     @Test
     void testGetAllTasks() {

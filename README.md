@@ -16,6 +16,7 @@ The **Task Management Service** is a Spring Boot-based application that provides
 - **JUnit & MockMvc** for unit and component testing.
 - **Prometheus & Grafana** for Monitoring and Reporting.
 - **MapStruct** for efficient DTO mapping.
+- **RequestValidation** for incoming messages
 - **Resilience4j** for retry and fallback mechanisms in asynchronous task processing.
 - **Swagger** for API documentation.
 - **Sorting & Pagination** support for listing tasks efficiently.
@@ -33,6 +34,7 @@ The **Task Management Service** is a Spring Boot-based application that provides
 - Prometheus & Grafana
 - JUnit/Mockito & MockMvc
 - MapStruct
+- Jakarta Validation for request validation
 - Resilience4j (Retry & Fallback)
 - Swagger (OpenAPI 3)
 
