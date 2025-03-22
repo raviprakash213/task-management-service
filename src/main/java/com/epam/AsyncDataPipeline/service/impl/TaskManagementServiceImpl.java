@@ -3,6 +3,7 @@ package com.epam.AsyncDataPipeline.service.impl;
 import com.epam.AsyncDataPipeline.constants.TaskManagementConstants;
 import com.epam.AsyncDataPipeline.dto.TaskManagementRequest;
 import com.epam.AsyncDataPipeline.dto.TaskManagementResponse;
+import com.epam.AsyncDataPipeline.dto.TaskCreationResponse;
 import com.epam.AsyncDataPipeline.dto.TaskManagementStatusResponse;
 import com.epam.AsyncDataPipeline.dto.TaskStatisticsResponse;
 import com.epam.AsyncDataPipeline.entity.TaskManagement;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -62,45 +64,47 @@ public class TaskManagementServiceImpl implements TaskManagementService {
     @Override
     @Transactional
     @Retry(name = "taskServiceRetry", fallbackMethod = "taskServiceFallback")
-    public void submitTask(TaskManagementRequest taskManagementRequest) {
+    public CompletableFuture<TaskCreationResponse> submitTask(TaskManagementRequest taskManagementRequest) {
+        return CompletableFuture.supplyAsync(() -> {
+            logger.info("Submitting task: {}", taskManagementRequest.getName());
 
-        logger.info("Submitting task: {}", taskManagementRequest.getName());
+            // Convert DTO to Entity
+            TaskManagement task = entityToModelMapper.mapRequestToEntity(taskManagementRequest);
+            task.setStatus(TaskStatus.PENDING);
 
+            // Persist to DB
+            TaskManagement savedTask = taskManagementRepository.save(task);
+            logger.info("Task persisted with ID: {}", savedTask.getId());
 
-        TaskManagement taskManagement = entityToModelMapper.mapRequestToEntity(taskManagementRequest);
+            // Send to Kafka
+            sendToKafka(savedTask.getId().toString());
 
-        taskManagement.setStatus(TaskStatus.PENDING);
+            // Increment metrics
+            taskMetricsService.incrementTasksSubmitted();
 
+            return new TaskCreationResponse(savedTask.getName(), "Task Management Initiation Started");
+        });
+    }
 
-        TaskManagement taskManagementPersist = taskManagementRepository.save(taskManagement);
-
-        logger.info("Task persisted with ID: {}", taskManagementPersist.getId());
-        kafkaTemplate.send(topicName, taskManagementPersist.getId().toString());
-        logger.info("Task ID {} sent to Kafka topic", taskManagementPersist.getId());
-
-        taskMetricsService.incrementTasksSubmitted();
+    private void sendToKafka(String taskId) {
+        kafkaTemplate.send(topicName, taskId);
+        logger.info("Task ID {} sent to Kafka", taskId);
 
     }
 
-    /**
-     * Fallback method triggered when task submission fails.
-     *
-     * @param taskManagementRequest The task request.
-     * @param exception The exception that caused the failure.
-     */
-    public void taskServiceFallback(TaskManagementRequest taskManagementRequest,
-                                    Exception exception) {
+    private CompletableFuture<TaskCreationResponse> taskServiceFallback(TaskManagementRequest taskManagementRequest, Exception exception) {
         logger.error("Fallback triggered for submitTask due to: {}", exception.getMessage());
 
+        // Persist to DB with failed status
         TaskManagement taskManagement = entityToModelMapper.mapRequestToEntity(taskManagementRequest);
-
         taskManagement.setStatus(TaskStatus.FAILED);
         taskManagementRepository.save(taskManagement);
 
+        //Inc failed metrics
         taskMetricsService.incrementTasksFailed();
 
+        //throw exception in the fallback
         throw new TaskProcessingException("Failed to process task: " + exception.getMessage());
-
     }
 
 
@@ -120,7 +124,13 @@ public class TaskManagementServiceImpl implements TaskManagementService {
         return entityToModelMapper.mapEntityToStatusDto(taskManagementEntity);
     }
 
-    @Override
+    /**
+     * Retrieves a paginated list of all tasks from the database.
+     * This method fetches tasks based on the provided pagination and sorting criteria.
+     * @param pageable the pagination and sorting information
+     * @return a Page TaskManagementResponse containing the paginated task data
+     * */
+     @Override
     public Page<TaskManagementResponse> getAllTasks(Pageable pageable) {
         logger.info("Fetching all tasks with pagination: page={}, size={}, sort={}",
                 pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());

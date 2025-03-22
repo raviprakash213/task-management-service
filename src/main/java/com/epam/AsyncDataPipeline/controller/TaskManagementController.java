@@ -16,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -44,14 +43,11 @@ public class TaskManagementController {
     public ResponseEntity<TaskCreationResponse> submitTask(@RequestBody @Valid TaskManagementRequest taskManagement) {
         logger.info("Received request to create a task with name: {}", taskManagement.getName());
 
-        TaskCreationResponse taskCreationResponse = new TaskCreationResponse();
-        taskManagementService.submitTask(taskManagement);
+        TaskCreationResponse response = taskManagementService.submitTask(taskManagement).join();
 
         logger.info("Task submitted for processing: {}", taskManagement.getName());
 
-        taskCreationResponse.setName(taskManagement.getName());
-        taskCreationResponse.setCreationMessage("Task Management Initiation Started");
-        return ResponseEntity.status(HttpStatus.CREATED).body(taskCreationResponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
 

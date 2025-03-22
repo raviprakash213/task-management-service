@@ -3,10 +3,7 @@ package com.epam.AsyncDataPipeline.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-/**
- * DTO representing the request for task creation or update.
- * It includes validation constraints to ensure data integrity.
- */
+
 public class TaskManagementRequest {
 
 
