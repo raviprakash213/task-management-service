@@ -51,7 +51,7 @@ public class TaskManagementComponentTest {
                 }
                 """;
 
-        mockMvc.perform(post("/taskManagement")  // Ensure the correct endpoint
+        mockMvc.perform(post("/api/v1/taskManagement")  // Ensure the correct endpoint
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(taskRequestJson))
                 .andExpect(status().isCreated()) // Expect HTTP 201 Created
@@ -69,7 +69,7 @@ public class TaskManagementComponentTest {
                         }
                             """;
 
-        mockMvc.perform(post("/taskManagement")
+        mockMvc.perform(post("/api/v1/taskManagement")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidTaskRequestJson))
                 .andExpect(status().isBadRequest()) // Expect HTTP 400 Bad Request
@@ -80,7 +80,7 @@ public class TaskManagementComponentTest {
 
     @Test
     public void testGetAllTasks_Success() throws Exception {
-        mockMvc.perform(get("/taskManagement")
+        mockMvc.perform(get("/api/v1/taskManagement")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()) // Expect HTTP 200 OK
                 .andExpect(jsonPath("$.length()").value(6))
@@ -93,7 +93,7 @@ public class TaskManagementComponentTest {
 
     @Test
     public void testGetTaskStatusById() throws Exception {
-        mockMvc.perform(get("/taskManagement/status/" + savedTask.getId())
+        mockMvc.perform(get("/api/v1/taskManagement/status/" + savedTask.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(savedTask.getStatus().toString()));
@@ -103,7 +103,7 @@ public class TaskManagementComponentTest {
     public void testGetTaskById_NotFound() throws Exception {
         long invalidId = 999L; // Assuming this ID doesn't exist
 
-        mockMvc.perform(get("/taskManagement/status/" + invalidId)
+        mockMvc.perform(get("/api/v1/taskManagement/status/" + invalidId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound()) // Expecting 404 status
                 .andExpect(jsonPath("$.message").value("Task with id " + invalidId + " not found")); // Assert error message
@@ -111,7 +111,7 @@ public class TaskManagementComponentTest {
 
     @Test
     public void testGetTaskStatistics() throws Exception {
-        mockMvc.perform(get("/taskManagement/statistics")
+        mockMvc.perform(get("/api/v1/taskManagement/statistics")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()) // Ensure HTTP 200 response
                 .andExpect(jsonPath("$.totalTasks").value(7))
@@ -124,7 +124,7 @@ public class TaskManagementComponentTest {
     @Test
     public void testGetAllTasks_WithPaginationAndSorting() throws Exception {
 
-        mockMvc.perform(get("/taskManagement")
+        mockMvc.perform(get("/api/v1/taskManagement")
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("page", "0") // Page number
                         .param("size", "2") // Page size
@@ -139,7 +139,7 @@ public class TaskManagementComponentTest {
     @Test
     public void testGetAllTasks_WithPaginationAndSorting_DescendingOrder() throws Exception {
 
-        mockMvc.perform(get("/taskManagement")
+        mockMvc.perform(get("/api/v1/taskManagement")
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("page", "0") // Page number
                         .param("size", "2") // Page size
@@ -151,5 +151,27 @@ public class TaskManagementComponentTest {
                 .andExpect(jsonPath("$[1].name").value("Task 5")); // Second task should be "Task 5"
     }
 
+    @Test
+    public void testGetAllTasks_InvalidSortDirection() throws Exception {
+        mockMvc.perform(get("/api/v1/taskManagement")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("page", "0")
+                        .param("size", "2")
+                        .param("sortBy", "name")
+                        .param("sortDir", "desc1"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid sorting direction: 'desc1'. Allowed values: 'asc' or 'desc'."));
+    }
+
+    @Test
+    public void testGetAllTasks_InvalidSortField() throws Exception {
+        mockMvc.perform(get("/api/v1/taskManagement")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("page", "0")
+                        .param("size", "2")
+                        .param("sortBy", "random")
+                        .param("sortDir", "asc"))
+                .andExpect(status().isBadRequest());
+    }
 
 }

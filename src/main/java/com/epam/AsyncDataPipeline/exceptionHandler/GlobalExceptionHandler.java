@@ -2,11 +2,14 @@ package com.epam.AsyncDataPipeline.exceptionHandler;
 
 import com.epam.AsyncDataPipeline.dto.ErrorResponse;
 import com.epam.AsyncDataPipeline.enums.ErrorType;
+import com.epam.AsyncDataPipeline.exception.InvalidSortDirectionException;
 import com.epam.AsyncDataPipeline.exception.TaskNotFoundException;
 import com.epam.AsyncDataPipeline.exception.TaskProcessingException;
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -42,6 +45,24 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleTaskProcessingException(TaskProcessingException ex) {
         logger.error("Task processing error: {}", ex.getMessage());
         return buildErrorResponse(ex, ErrorType.SYSTEM_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(RequestNotPermitted.class)
+    public ResponseEntity<ErrorResponse> handleRateLimitExceeded(RequestNotPermitted ex) {
+        logger.error("Rate limit exceeded: {}", ex.getMessage());
+        return buildErrorResponse(ex, ErrorType.SYSTEM_ERROR, HttpStatus.TOO_MANY_REQUESTS);
+    }
+
+    @ExceptionHandler(PropertyReferenceException.class)
+    public ResponseEntity<ErrorResponse> handlePropertyReferenceException(PropertyReferenceException ex) {
+        logger.error("Invalid property reference: {}", ex.getMessage());
+        return buildErrorResponse(ex, ErrorType.DATA_ERROR, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidSortDirectionException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidSortDirectionException(InvalidSortDirectionException ex) {
+        logger.error("Invalid sorting direction: {}", ex.getMessage());
+        return buildErrorResponse(ex, ErrorType.DATA_ERROR, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

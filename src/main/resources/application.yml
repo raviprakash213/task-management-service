@@ -6,6 +6,12 @@ spring:
     username: postgres
     password: root123
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10     #max no of connections
+      minimum-idle: 2           #idle no of connections
+      idle-timeout: 30000       #idle connection timeout
+      max-lifetime: 1800000     #max connection timeout
+      connection-timeout: 30000 # connection timeout
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
@@ -46,6 +52,12 @@ resilience4j:
       taskServiceRetry:
         maxAttempts: 3  # Retry up to 3 times before failing
         wait-duration: 2s
+  ratelimiter:
+    instances:
+      submitTaskRateLimiter:
+        limit-for-period: 10       # Maximum 10 requests
+        limit-refresh-period: 1s  # Refresh limit every 1 second
+        timeout-duration: 0ms
 
 
 

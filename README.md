@@ -17,8 +17,9 @@ The **Task Management Service** is a Spring Boot-based application that provides
 - **Prometheus & Grafana** for Monitoring and Reporting.
 - **MapStruct** for efficient DTO mapping.
 - **RequestValidation** for incoming messages
-- **Resilience4j** for retry and fallback mechanisms in asynchronous task processing.
+- **Resilience4j** for retry, fallback mechanisms, and rate limiting in asynchronous task processing.
 - **Swagger** for API documentation.
+- **HikariCP** for efficient database connection pooling.
 - **Sorting & Pagination** support for listing tasks efficiently.
 
 ## Technologies Used
@@ -35,8 +36,9 @@ The **Task Management Service** is a Spring Boot-based application that provides
 - JUnit/Mockito & MockMvc
 - MapStruct
 - Jakarta Validation for request validation
-- Resilience4j (Retry & Fallback)
+- Resilience4j (Retry, Fallback & RateLimiting)
 - Swagger (OpenAPI 3)
+- HikariCP for database connection pooling
 
 ## Prerequisites
 - Java 17
@@ -119,12 +121,12 @@ mvn test
 
 
 ### Task Management
-| Method | Endpoint                 | Description                   |
-|--------|--------------------------|-------------------------------|
-| GET    | `/taskManagement`        | Get all tasks                 |
-| POST   | `/taskManagement`        | Submit a new task             |
-| GET    |`/taskManagement/status/{id}`| Get status of a task by ID |
-| GET    | `/taskManagement/statistics`            | Retrieves aggregated task statistics          |
+| Method | Endpoint                             | Description                   |
+|--------|--------------------------------------|-------------------------------|
+| GET    | `/api/v1/taskManagement`             | Get all tasks                 |
+| POST   | `/api/v1/taskManagement`             | Submit a new task             |
+| GET    | `/api/v1/taskManagement/status/{id}` | Get status of a task by ID |
+| GET    | `/api/v1/taskManagement/statistics`  | Retrieves aggregated task statistics          |
 
 
 ### Swagger API Documentation
