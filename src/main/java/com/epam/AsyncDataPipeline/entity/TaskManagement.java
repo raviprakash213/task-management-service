@@ -21,9 +21,9 @@ public class TaskManagement {
     private Long id;
     private String name;
     private String payload;
-    @Enumerated(EnumType.STRING) // Store as a string in the database
-    @Column(name = "status") // Optional, ensures correct column mapping
-    private TaskStatus status; // e.g., "pending", "processing", "completed", "failed"
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private TaskStatus status;
 
 
     public Long getId() {

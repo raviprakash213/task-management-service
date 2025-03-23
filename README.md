@@ -135,4 +135,11 @@ Swagger UI is available at:
 http://localhost:8080/swagger-ui/index.html
 ```
 
+### Monitoring images attached in resources folder
+
+```
+Grafana_Monitoring.png 
+Prometheus_Monitoring.png
+```
+
 

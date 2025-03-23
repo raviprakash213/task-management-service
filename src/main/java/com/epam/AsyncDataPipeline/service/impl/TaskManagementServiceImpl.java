@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 @Service
 public class TaskManagementServiceImpl implements TaskManagementService {
 
-    @Value("${spring.kafka.topic.name}")  // Read topic name from application.yml
+    @Value("${spring.kafka.topic.name}")
     private String topicName;
     @Autowired
     private EntityToModelMapper entityToModelMapper;
