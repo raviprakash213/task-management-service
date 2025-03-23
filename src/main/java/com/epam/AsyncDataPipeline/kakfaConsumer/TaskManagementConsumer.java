@@ -93,7 +93,7 @@ public class TaskManagementConsumer {
      *
      * @param taskId    the task ID that encountered an error
      * @param exception the exception that occurred
-     * @return null (used for CompletableFuture exceptionally handling)
+     * throw TaskProcessingException during exception
      */
     private Void handleProcessingError(Long taskId, Throwable exception) {
         logger.error("Error processing task {}: {}", taskId, exception.getMessage(), exception);

@@ -29,45 +29,46 @@ public class GlobalExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    private ResponseEntity<ErrorResponse> buildErrorResponse(Exception ex, ErrorType errorType, HttpStatus status) {
-        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), errorType);
+    private ResponseEntity<ErrorResponse> buildErrorResponse(Exception exception, ErrorType errorType, HttpStatus status) {
+        ErrorResponse errorResponse = new ErrorResponse(exception.getMessage(), errorType);
         return ResponseEntity.status(status).body(errorResponse);
     }
 
 
     @ExceptionHandler(TaskNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleTaskNotFoundException(TaskNotFoundException ex) {
-        logger.error("Task not found: {}", ex.getMessage());
-        return buildErrorResponse(ex, ErrorType.DATA_ERROR, HttpStatus.NOT_FOUND);
+    public ResponseEntity<ErrorResponse> handleTaskNotFoundException(TaskNotFoundException taskNotFoundException) {
+        logger.error("Task not found: {}", taskNotFoundException.getMessage());
+        return buildErrorResponse(taskNotFoundException, ErrorType.DATA_ERROR, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(TaskProcessingException.class)
-    public ResponseEntity<ErrorResponse> handleTaskProcessingException(TaskProcessingException ex) {
-        logger.error("Task processing error: {}", ex.getMessage());
-        return buildErrorResponse(ex, ErrorType.SYSTEM_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<ErrorResponse> handleTaskProcessingException(TaskProcessingException taskProcessingException) {
+        logger.error("Task processing error: {}", taskProcessingException.getMessage());
+        return buildErrorResponse(taskProcessingException, ErrorType.SYSTEM_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(RequestNotPermitted.class)
-    public ResponseEntity<ErrorResponse> handleRateLimitExceeded(RequestNotPermitted ex) {
-        logger.error("Rate limit exceeded: {}", ex.getMessage());
-        return buildErrorResponse(ex, ErrorType.SYSTEM_ERROR, HttpStatus.TOO_MANY_REQUESTS);
+    public ResponseEntity<ErrorResponse> handleRateLimitExceeded(RequestNotPermitted requestNotPermitted) {
+        logger.error("Rate limit exceeded: {}", requestNotPermitted.getMessage());
+        return buildErrorResponse(requestNotPermitted, ErrorType.SYSTEM_ERROR, HttpStatus.TOO_MANY_REQUESTS);
     }
 
     @ExceptionHandler(PropertyReferenceException.class)
-    public ResponseEntity<ErrorResponse> handlePropertyReferenceException(PropertyReferenceException ex) {
-        logger.error("Invalid property reference: {}", ex.getMessage());
-        return buildErrorResponse(ex, ErrorType.DATA_ERROR, HttpStatus.BAD_REQUEST);
+    public ResponseEntity<ErrorResponse> handlePropertyReferenceException(PropertyReferenceException propertyReferenceException) {
+        logger.error("Invalid property reference: {}", propertyReferenceException.getMessage());
+        return buildErrorResponse(propertyReferenceException, ErrorType.DATA_ERROR, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(InvalidSortDirectionException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidSortDirectionException(InvalidSortDirectionException ex) {
-        logger.error("Invalid sorting direction: {}", ex.getMessage());
-        return buildErrorResponse(ex, ErrorType.DATA_ERROR, HttpStatus.BAD_REQUEST);
+    public ResponseEntity<ErrorResponse> handleInvalidSortDirectionException(InvalidSortDirectionException invalidSortDirectionException) {
+        logger.error("Invalid sorting direction: {}", invalidSortDirectionException.getMessage());
+        return buildErrorResponse(invalidSortDirectionException, ErrorType.DATA_ERROR, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        List<String> errors = ex.getBindingResult()
+    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException methodArgumentNotValidException) {
+        logger.error("MethodArgumentNotValidException : {}", methodArgumentNotValidException.getMessage());
+        List<String> errors = methodArgumentNotValidException.getBindingResult()
                 .getFieldErrors()
                 .stream()
                 .map(DefaultMessageSourceResolvable::getDefaultMessage)
